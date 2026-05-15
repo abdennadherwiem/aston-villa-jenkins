@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                git 'https://github.com/ahmedKhlif/aston-villa-jenkins.git'
+                git 'https://github.com/abdennadherwiem/aston-villa-jenkins.git'
             }
         }
     }
