@@ -44,18 +44,22 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy SSH') {
             steps {
-                sh '''
-                    docker stop $CONTAINER_NAME  || true
-                    docker rm   $CONTAINER_NAME  || true
-                    docker run -d \
-                        --name $CONTAINER_NAME \
-                        -p 4200:80 \
-                        --restart unless-stopped \
-                        $DOCKER_IMAGE:$DOCKER_TAG
-                    echo "✅ App running at http://$(hostname -I | awk '{print $1}'):4200"
-                '''
+                sshagent(['Vagrant_ssh']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no master@10.208.73.242 "
+                            docker stop $CONTAINER_NAME || true &&
+                            docker rm $CONTAINER_NAME || true &&
+                            docker pull $DOCKER_IMAGE:$DOCKER_TAG &&
+                            docker run -d \
+                                --name $CONTAINER_NAME \
+                                -p 4200:80 \
+                                --restart unless-stopped \
+                                $DOCKER_IMAGE:$DOCKER_TAG
+                        "
+                    '''
+                }
             }
         }
     }
