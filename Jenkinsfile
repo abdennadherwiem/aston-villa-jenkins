@@ -44,20 +44,21 @@ pipeline {
             }
         }
 
-    stage('Deploy via SSH') {
+   stage('Deploy via SSH') {
     steps {
-        sshagent(credentials: ['Vagrant_ssh']) {
-            sh """
-                ssh -o StrictHostKeyChecking=no master@192.168.1.13 '
-                    docker pull wiemabdennadher/aston-villa-app:$DOCKER_TAG &&
-                    docker stop aston-villa-app || true &&
-                    docker rm aston-villa-app || true &&
-                    docker run -d -p 4200:80 --name aston-villa-app wiemabdennadher/aston-villa-app:$DOCKER_TAG
-                '
-            """
-        }
+        sh """
+            ssh -o StrictHostKeyChecking=no master@192.168.1.13 '
+                docker pull wiemabdennadher/aston-villa-app:$DOCKER_TAG &&
+                docker stop aston-villa-app || true &&
+                docker rm aston-villa-app || true &&
+                docker run -d \
+                    --name aston-villa-app \
+                    -p 4200:80 \
+                    --restart unless-stopped \
+                    wiemabdennadher/aston-villa-app:$DOCKER_TAG
+            '
+        """
     }
-}
 }
     post {
         success { echo '🎉 Pipeline completed successfully!' }
